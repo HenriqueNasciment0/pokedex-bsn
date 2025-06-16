@@ -66,3 +66,10 @@ export interface PokemonStat {
     url: string;
   };
 }
+
+export interface FavoritePokemon {
+  id: number;
+  name: string;
+  image: string;
+  dateAdded: Date;
+}
