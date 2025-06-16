@@ -14,6 +14,8 @@ import {
   IonCardTitle,
   IonCardContent,
   IonImg,
+  IonButton,
+  IonIcon,
   IonInfiniteScroll,
   IonInfiniteScrollContent,
   IonSpinner,
@@ -47,6 +49,8 @@ import { Pokemon, PokemonListItem } from '../models/pokemon.interface';
     IonCardTitle,
     IonCardContent,
     IonImg,
+    IonButton,
+    IonIcon,
     IonInfiniteScroll,
     IonInfiniteScrollContent,
     IonSpinner,
@@ -145,6 +149,7 @@ export class Tab1Page implements OnInit {
     await this.loadPokemons();
     event.target.complete();
 
+    // Desabilita infinite scroll se não há mais dados
     if (!this.hasMoreData) {
       event.target.disabled = true;
     }
@@ -158,6 +163,32 @@ export class Tab1Page implements OnInit {
   }
 
   /**
+   * Toggle favorito
+   */
+  async toggleFavorite(pokemon: Pokemon, event: Event) {
+    event.stopPropagation();
+
+    const isFavorite = this.pokemonService.isFavorite(pokemon.id);
+
+    if (isFavorite) {
+      this.pokemonService.removeFromFavorites(pokemon.id);
+      this.showToast(`${this.capitalize(pokemon.name)} removido dos favoritos`);
+    } else {
+      this.pokemonService.addToFavorites(pokemon);
+      this.showToast(
+        `${this.capitalize(pokemon.name)} adicionado aos favoritos`
+      );
+    }
+  }
+
+  /**
+   * Verifica se Pokémon é favorito
+   */
+  isFavorite(pokemonId: number): boolean {
+    return this.pokemonService.isFavorite(pokemonId);
+  }
+
+  /**
    * Obtém a melhor imagem do Pokémon
    */
   getPokemonImage(pokemon: Pokemon): string {
@@ -166,6 +197,42 @@ export class Tab1Page implements OnInit {
       pokemon.sprites.front_default ||
       'assets/pokemon-placeholder.png'
     );
+  }
+
+  /**
+   * Obtém cor baseada no tipo principal do Pokémon
+   */
+  getTypeColor(pokemon: Pokemon): string {
+    const typeColors: { [key: string]: string } = {
+      normal: '#A8A878',
+      fire: '#F08030',
+      water: '#6890F0',
+      electric: '#F8D030',
+      grass: '#78C850',
+      ice: '#98D8D8',
+      fighting: '#C03028',
+      poison: '#A040A0',
+      ground: '#E0C068',
+      flying: '#A890F0',
+      psychic: '#F85888',
+      bug: '#A8B820',
+      rock: '#B8A038',
+      ghost: '#705898',
+      dragon: '#7038F8',
+      dark: '#705848',
+      steel: '#B8B8D0',
+      fairy: '#EE99AC',
+    };
+
+    const primaryType = pokemon.types[0]?.type.name || 'normal';
+    return typeColors[primaryType] || '#68A090';
+  }
+
+  /**
+   * Capitaliza primeira letra
+   */
+  capitalize(text: string): string {
+    return text.charAt(0).toUpperCase() + text.slice(1);
   }
 
   /**

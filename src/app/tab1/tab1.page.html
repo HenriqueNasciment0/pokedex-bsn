@@ -20,8 +20,23 @@
         size-lg="3"
         *ngFor="let pokemon of pokemons"
       >
-        <ion-card class="pokemon-card" (click)="viewPokemonDetails(pokemon)">
-          <ion-card-header class="pokemon-card-header">
+        <ion-card
+          class="pokemon-card"
+          (click)="viewPokemonDetails(pokemon)"
+          [style.--card-color]="getTypeColor(pokemon)"
+        >
+          <ion-button
+            fill="clear"
+            class="favorite-button"
+            (click)="toggleFavorite(pokemon, $event)"
+          >
+            <ion-icon
+              [name]="isFavorite(pokemon.id) ? 'heart' : 'heart-outline'"
+              [color]="isFavorite(pokemon.id) ? 'danger' : 'medium'"
+            ></ion-icon>
+          </ion-button>
+
+          <ion-card-header>
             <div class="pokemon-image-container">
               <ion-img
                 [src]="getPokemonImage(pokemon)"
@@ -31,7 +46,7 @@
             </div>
 
             <ion-card-title class="pokemon-name">
-              {{ pokemon.name }}
+              {{ capitalize(pokemon.name) }}
             </ion-card-title>
             <p class="pokemon-id">
               #{{ pokemon.id.toString().padStart(3, '0') }}
@@ -40,8 +55,12 @@
 
           <ion-card-content>
             <div class="pokemon-types">
-              <ion-chip *ngFor="let type of pokemon.types" class="type-chip">
-                <ion-label>{{ type.type.name }}</ion-label>
+              <ion-chip
+                *ngFor="let type of pokemon.types"
+                class="type-chip"
+                [style.background-color]="getTypeColor(pokemon)"
+              >
+                <ion-label>{{ capitalize(type.type.name) }}</ion-label>
               </ion-chip>
             </div>
 

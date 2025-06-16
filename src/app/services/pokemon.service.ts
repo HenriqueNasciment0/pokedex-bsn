@@ -1,7 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { PokemonListResponse, Pokemon } from '../models/pokemon.interface';
+import { Observable, BehaviorSubject } from 'rxjs';
+import {
+  PokemonListResponse,
+  Pokemon,
+  FavoritePokemon,
+} from '../models/pokemon.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -10,7 +14,12 @@ export class PokemonService {
   private readonly baseUrl = 'https://pokeapi.co/api/v2';
   private readonly itemsPerPage = 20;
 
-  constructor(private http: HttpClient) {}
+  private favoritesSubject = new BehaviorSubject<FavoritePokemon[]>([]);
+  public favorites$ = this.favoritesSubject.asObservable();
+
+  constructor(private http: HttpClient) {
+    this.loadFavoritesFromStorage();
+  }
 
   /**
    * Busca lista paginada de Pokémons
@@ -64,5 +73,75 @@ export class PokemonService {
         });
       });
     });
+  }
+
+  /**
+   * Adiciona Pokémon aos favoritos
+   */
+  addToFavorites(pokemon: Pokemon): void {
+    const currentFavorites = this.favoritesSubject.value;
+    const isAlreadyFavorite = currentFavorites.some(
+      (fav) => fav.id === pokemon.id
+    );
+
+    if (!isAlreadyFavorite) {
+      const favoritePokemon: FavoritePokemon = {
+        id: pokemon.id,
+        name: pokemon.name,
+        image:
+          pokemon.sprites.other['official-artwork'].front_default ||
+          pokemon.sprites.front_default,
+        dateAdded: new Date(),
+      };
+
+      const updatedFavorites = [...currentFavorites, favoritePokemon];
+      this.favoritesSubject.next(updatedFavorites);
+      this.saveFavoritesToStorage(updatedFavorites);
+    }
+  }
+
+  /**
+   * Remove Pokémon dos favoritos
+   */
+  removeFromFavorites(pokemonId: number): void {
+    const currentFavorites = this.favoritesSubject.value;
+    const updatedFavorites = currentFavorites.filter(
+      (fav) => fav.id !== pokemonId
+    );
+    this.favoritesSubject.next(updatedFavorites);
+    this.saveFavoritesToStorage(updatedFavorites);
+  }
+
+  /**
+   * Verifica se Pokémon está nos favoritos
+   */
+  isFavorite(pokemonId: number): boolean {
+    return this.favoritesSubject.value.some((fav) => fav.id === pokemonId);
+  }
+
+  /**
+   * Salva favoritos no localStorage
+   */
+  private saveFavoritesToStorage(favorites: FavoritePokemon[]): void {
+    try {
+      localStorage.setItem('pokemon-favorites', JSON.stringify(favorites));
+    } catch (error) {
+      console.error('Erro ao salvar favoritos:', error);
+    }
+  }
+
+  /**
+   * Carrega favoritos do localStorage
+   */
+  private loadFavoritesFromStorage(): void {
+    try {
+      const stored = localStorage.getItem('pokemon-favorites');
+      if (stored) {
+        const favorites = JSON.parse(stored) as FavoritePokemon[];
+        this.favoritesSubject.next(favorites);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar favoritos:', error);
+    }
   }
 }
