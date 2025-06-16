@@ -58,7 +58,7 @@ import { Pokemon, PokemonListItem } from '../models/pokemon.interface';
     IonLabel,
   ],
 })
-export class Tab1Page implements OnInit {
+export class HomePage implements OnInit {
   pokemons: Pokemon[] = [];
   currentOffset = 0;
   isLoading = false;
@@ -242,7 +242,7 @@ export class Tab1Page implements OnInit {
     const toast = await this.toastController.create({
       message,
       duration: 2000,
-      position: 'bottom',
+      position: 'top',
       color: 'success',
     });
     toast.present();
@@ -255,7 +255,7 @@ export class Tab1Page implements OnInit {
     const toast = await this.toastController.create({
       message,
       duration: 3000,
-      position: 'bottom',
+      position: 'top',
       color: 'danger',
     });
     toast.present();
