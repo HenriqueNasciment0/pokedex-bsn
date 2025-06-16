@@ -1,0 +1,99 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="danger">
+    <ion-title>
+      <ion-icon name="heart" color="light"></ion-icon>
+      Favoritos
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Favoritos</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <!-- Mensagem quando não há favoritos -->
+  <div *ngIf="favorites.length === 0" class="empty-state">
+    <ion-icon name="heart-outline" class="empty-icon"></ion-icon>
+    <h2>Nenhum favorito ainda</h2>
+    <p>Adicione Pokémons aos favoritos na aba principal para vê-los aqui!</p>
+    <ion-button fill="outline" color="danger" (click)="goToMainTab()">
+      <ion-icon name="search" slot="start"></ion-icon>
+      Explorar Pokémons
+    </ion-button>
+  </div>
+
+  <!-- Lista de favoritos -->
+  <ion-grid class="pokemon-grid" *ngIf="favorites.length > 0">
+    <div class="favorites-header">
+      <p>{{ favorites.length }} Pokémon(s) favorito(s)</p>
+      <ion-button
+        fill="clear"
+        color="danger"
+        size="small"
+        (click)="confirmRemoveAll()"
+        *ngIf="favorites.length > 0"
+      >
+        <ion-icon name="trash" slot="start"></ion-icon>
+        Limpar todos
+      </ion-button>
+    </div>
+
+    <ion-row>
+      <ion-col
+        size="12"
+        size-sm="6"
+        size-md="4"
+        size-lg="3"
+        *ngFor="let pokemon of favorites; trackBy: trackByPokemonId"
+      >
+        <ion-card
+          class="favorite-card"
+          (click)="viewPokemonDetails(pokemon.id)"
+        >
+          <!-- Botão remover favorito -->
+          <ion-button
+            fill="clear"
+            class="remove-favorite-button"
+            (click)="confirmRemoveFavorite(pokemon, $event)"
+          >
+            <ion-icon name="heart" color="danger"></ion-icon>
+          </ion-button>
+
+          <!-- Data de quando foi adicionado -->
+          <div class="date-added">
+            <ion-chip color="light" class="date-chip">
+              <ion-icon name="time-outline"></ion-icon>
+              <ion-label>{{ formatDate(pokemon.dateAdded) }}</ion-label>
+            </ion-chip>
+          </div>
+
+          <ion-card-header>
+            <div class="pokemon-image-container">
+              <ion-img
+                [src]="pokemon.image || 'assets/pokemon-placeholder.png'"
+                [alt]="pokemon.name"
+                class="pokemon-image"
+              ></ion-img>
+            </div>
+
+            <ion-card-title class="pokemon-name">
+              {{ capitalize(pokemon.name) }}
+            </ion-card-title>
+            <p class="pokemon-id">
+              #{{ pokemon.id.toString().padStart(3, '0') }}
+            </p>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <!-- Loading quando carregando dados -->
+  <div *ngIf="isLoading" class="loading-container">
+    <ion-spinner name="crescent" color="danger"></ion-spinner>
+    <p>Carregando favoritos...</p>
+  </div>
+</ion-content>

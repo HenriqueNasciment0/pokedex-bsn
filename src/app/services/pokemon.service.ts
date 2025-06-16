@@ -133,7 +133,7 @@ export class PokemonService {
   /**
    * Carrega favoritos do localStorage
    */
-  private loadFavoritesFromStorage(): void {
+  public loadFavoritesFromStorage(): void {
     try {
       const stored = localStorage.getItem('pokemon-favorites');
       if (stored) {
