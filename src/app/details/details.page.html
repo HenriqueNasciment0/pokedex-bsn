@@ -1,0 +1,208 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title
+      >{{ pokemon ? capitalize(pokemon.name) : 'Carregando...' }}</ion-title
+    >
+    <ion-buttons slot="end" *ngIf="pokemon">
+      <ion-button
+        (click)="toggleFavorite($event)"
+        fill="clear"
+        class="favorite-btn"
+      >
+        <ion-icon
+          [name]="isFavorite() ? 'heart' : 'heart-outline'"
+          [color]="isFavorite() ? 'danger' : 'medium'"
+        >
+        </ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-content">
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
+      <p>Carregando detalhes do Pokémon...</p>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && pokemon" class="pokemon-detail-container">
+    <div class="hero-section" [style.--primary-color]="getTypeColor()">
+      <div class="hero-background"></div>
+      <div class="hero-content">
+        <div class="pokemon-image-container">
+          <div class="image-backdrop"></div>
+          <ion-img
+            [src]="getPokemonImage()"
+            [alt]="pokemon.name"
+            class="hero-image"
+          ></ion-img>
+        </div>
+        <div class="hero-info">
+          <div class="pokemon-number">
+            #{{ pokemon.id.toString().padStart(3, '0') }}
+          </div>
+          <h1 class="pokemon-name">{{ capitalize(pokemon.name) }}</h1>
+          <div class="pokemon-types">
+            <div
+              *ngFor="let type of pokemon.types"
+              class="type-chip"
+              [style.--type-color]="getTypeColor()"
+            >
+              {{ capitalize(type.type.name) }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="quick-stats">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <ion-icon name="resize-outline"></ion-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ getHeightInMeters() }}m</div>
+          <div class="stat-label">Altura</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">
+          <ion-icon name="barbell-outline"></ion-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ getWeightInKg() }}kg</div>
+          <div class="stat-label">Peso</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">
+          <ion-icon name="star-outline"></ion-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ pokemon.base_experience }}</div>
+          <div class="stat-label">Exp. Base</div>
+        </div>
+      </div>
+    </div>
+
+    <ion-card class="modern-card stats-card">
+      <div class="card-header">
+        <div class="header-icon">
+          <ion-icon name="analytics-outline"></ion-icon>
+        </div>
+        <h2>Estatísticas Base</h2>
+      </div>
+      <ion-card-content>
+        <div class="stats-grid">
+          <div *ngFor="let stat of pokemon.stats" class="stat-item">
+            <div class="stat-header">
+              <div class="stat-name-container">
+                <ion-icon
+                  [name]="getStatIcon(stat.stat.name)"
+                  class="stat-icon-small"
+                ></ion-icon>
+                <span class="stat-name"
+                  >{{ getStatDisplayName(stat.stat.name) }}</span
+                >
+              </div>
+              <div class="stat-value-container">
+                <span class="stat-value">{{ stat.base_stat }}</span>
+                <span class="stat-rating"
+                  >{{ getStatRating(stat.base_stat) }}</span
+                >
+              </div>
+            </div>
+            <div class="stat-bar-container">
+              <div class="stat-bar">
+                <div
+                  class="stat-fill"
+                  [style.width.%]="getStatPercentage(stat.base_stat)"
+                  [style.--stat-color]="getStatColor(stat.base_stat, stat.stat.name)"
+                ></div>
+              </div>
+              <div class="stat-percentage">
+                {{ getStatPercentage(stat.base_stat) | number:'1.0-0' }}%
+              </div>
+            </div>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="modern-card abilities-card">
+      <div class="card-header">
+        <div class="header-icon">
+          <ion-icon name="flash-outline"></ion-icon>
+        </div>
+        <h2>Habilidades</h2>
+      </div>
+      <ion-card-content>
+        <div class="abilities-grid">
+          <div
+            *ngFor="let ability of pokemon.abilities"
+            class="ability-item"
+            [class.hidden-ability]="ability.is_hidden"
+          >
+            <div class="ability-icon">
+              <ion-icon name="diamond-outline"></ion-icon>
+            </div>
+            <div class="ability-info">
+              <div class="ability-name">
+                {{ capitalize(ability.ability.name.replace('-', ' ')) }}
+              </div>
+              <div class="ability-type" *ngIf="ability.is_hidden">
+                Habilidade Oculta
+              </div>
+            </div>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="modern-card evolution-card" *ngIf="false">
+      <div class="card-header">
+        <div class="header-icon">
+          <ion-icon name="git-branch-outline"></ion-icon>
+        </div>
+        <h2>Cadeia Evolutiva</h2>
+      </div>
+      <ion-card-content> </ion-card-content>
+    </ion-card>
+
+    <ion-card class="modern-card gallery-card">
+      <div class="card-header">
+        <div class="header-icon">
+          <ion-icon name="images-outline"></ion-icon>
+        </div>
+        <h2>Galeria</h2>
+      </div>
+      <ion-card-content>
+        <div class="sprites-container">
+          <div *ngIf="pokemon.sprites.front_default" class="sprite-card">
+            <div class="sprite-image-container">
+              <ion-img
+                [src]="pokemon.sprites.front_default"
+                class="sprite-image"
+              ></ion-img>
+            </div>
+            <div class="sprite-label">Frente</div>
+          </div>
+          <div *ngIf="pokemon.sprites.back_default" class="sprite-card">
+            <div class="sprite-image-container">
+              <ion-img
+                [src]="pokemon.sprites.back_default"
+                class="sprite-image"
+              ></ion-img>
+            </div>
+            <div class="sprite-label">Costas</div>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

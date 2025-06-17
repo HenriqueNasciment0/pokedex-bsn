@@ -20,7 +20,17 @@ export interface Pokemon {
   abilities: PokemonAbility[];
   types: PokemonType[];
   stats: PokemonStat[];
+  order: number;
   species: {
+    name: string;
+    url: string;
+  };
+  game_indices?: PokemonGameIndex[];
+}
+
+export interface PokemonGameIndex {
+  game_index: number;
+  version: {
     name: string;
     url: string;
   };
