@@ -4,6 +4,12 @@
 ![Angular](https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
 
+## 🎥 Demo da Aplicação
+
+<div align="center">
+  <video src="https://github.com/user-attachments/assets/0b41001a-c62c-4e02-aeb7-288f33b75474" controls width="70%"></video>
+</div>
+
 Uma Pokedex moderna e elegante desenvolvida com Ionic Angular usando componentes standalone.
 
 **🔗 Acesse a aplicação:** [https://pokedex-bsn.vercel.app/tabs/home](https://pokedex-bsn.vercel.app/tabs/home)
