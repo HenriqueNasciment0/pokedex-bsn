@@ -115,14 +115,14 @@ export class FavoritesPage implements OnInit, OnDestroy {
    * Navega para detalhes do Pokémon
    */
   viewPokemonDetails(pokemonId: number) {
-    this.router.navigate(['/pokemon-detail', pokemonId]);
+    this.router.navigate(['/details', pokemonId]);
   }
 
   /**
-   * Navega para a aba principal (Tab1)
+   * Navega para a aba principal (Home)
    */
   goToMainTab() {
-    this.router.navigate(['/tabs/tab1']);
+    this.router.navigate(['/tabs/home']);
   }
 
   /**

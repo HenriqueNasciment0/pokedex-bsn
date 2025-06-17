@@ -159,7 +159,7 @@ export class HomePage implements OnInit {
    * Navega para a página de detalhes
    */
   viewPokemonDetails(pokemon: Pokemon) {
-    this.router.navigate(['/pokemon-detail', pokemon.id]);
+    this.router.navigate(['/details', pokemon.id]);
   }
 
   /**
