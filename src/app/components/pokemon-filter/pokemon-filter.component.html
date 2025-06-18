@@ -1,0 +1,138 @@
+<div class="filter-container">
+  <div class="filter-section">
+    <ion-button
+      fill="clear"
+      (click)="togglePopover()"
+      id="filter-trigger"
+      [disabled]="disabled"
+      [ngClass]="[compact ? 'compact' : '', buttonClass]"
+    >
+      <ion-icon name="filter-outline" slot="start"></ion-icon>
+      <ion-label *ngIf="!compact && selectedTypes.length === 0"
+        >Filtrar</ion-label
+      >
+      <ion-label *ngIf="!compact && selectedTypes.length > 0">
+        Filtros ({{ selectedTypes.length }})
+      </ion-label>
+      <ion-label *ngIf="compact && selectedTypes.length > 0">
+        {{ selectedTypes.length }}
+      </ion-label>
+    </ion-button>
+  </div>
+
+  <div
+    class="selected-types-section"
+    *ngIf="!compact && selectedTypes.length > 0"
+  >
+    <div class="selected-types-header">
+      <span class="selected-types-title">Tipos selecionados:</span>
+      <ion-button
+        fill="clear"
+        size="small"
+        color="medium"
+        class="clear-all-button"
+        (click)="clearFilters()"
+        [disabled]="disabled"
+      >
+        <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
+
+    <div class="selected-types-chips">
+      <ion-chip
+        *ngFor="let type of selectedTypes; trackBy: trackByType"
+        class="selected-type-chip"
+        [style.--chip-background]="getTypeColor(type)"
+        (click)="!disabled && toggleType(type)"
+        [class.disabled]="disabled"
+      >
+        <div class="chip-content">
+          <div
+            class="type-indicator"
+            [style.background-color]="getTypeColor(type)"
+          ></div>
+          <ion-label>{{ capitalize(type) }}</ion-label>
+          <ion-icon name="close-outline" class="remove-icon"></ion-icon>
+        </div>
+      </ion-chip>
+    </div>
+  </div>
+
+  <ion-popover
+    trigger="filter-trigger"
+    [isOpen]="isPopoverOpen && !disabled"
+    (didDismiss)="closePopover()"
+    placement="bottom-start"
+    class="filter-popover"
+    [showBackdrop]="true"
+    [backdropDismiss]="true"
+  >
+    <ng-template>
+      <ion-content class="popover-content">
+        <div class="popover-header">
+          <div class="header-content">
+            <h3>Escolher Tipos de Pokémon</h3>
+            <p class="header-subtitle">Selecione os tipos que deseja filtrar</p>
+          </div>
+          <ion-button
+            fill="clear"
+            color="medium"
+            size="small"
+            (click)="closePopover()"
+            class="close-button"
+          >
+            <ion-icon name="close-outline"></ion-icon>
+          </ion-button>
+        </div>
+
+        <div class="types-container">
+          <div class="types-grid">
+            <div
+              class="type-item"
+              *ngFor="let type of pokemonTypes; trackBy: trackByTypeName"
+              [class.selected]="isTypeSelected(type.name)"
+              [class.disabled]="disabled"
+              (click)="!disabled && toggleType(type.name)"
+            >
+              <div class="type-visual">
+                <div class="type-color" [style.background-color]="type.color">
+                  <ion-icon
+                    *ngIf="isTypeSelected(type.name)"
+                    name="checkmark-outline"
+                    class="check-icon"
+                  ></ion-icon>
+                </div>
+              </div>
+              <span class="type-name">{{ capitalize(type.name) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="popover-footer">
+          <div class="footer-info">
+            <span class="selection-count">
+              {{ selectedTypes.length }}
+              {{
+                selectedTypes.length === 1
+                  ? "tipo selecionado"
+                  : "tipos selecionados"
+              }}
+            </span>
+          </div>
+          <div class="footer-actions">
+            <ion-button
+              fill="clear"
+              color="medium"
+              size="small"
+              (click)="clearFilters()"
+              [disabled]="selectedTypes.length === 0 || disabled"
+              class="primary-button"
+            >
+              Limpar
+            </ion-button>
+          </div>
+        </div>
+      </ion-content>
+    </ng-template>
+  </ion-popover>
+</div>
