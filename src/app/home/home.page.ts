@@ -18,17 +18,23 @@ import {
   IonIcon,
   IonInfiniteScroll,
   IonInfiniteScrollContent,
-  IonSpinner,
   IonChip,
   IonLabel,
   LoadingController,
   ToastController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { heart, heartOutline } from 'ionicons/icons';
+import {
+  heart,
+  heartOutline,
+  searchOutline,
+  chevronDownOutline,
+} from 'ionicons/icons';
 
 import { PokemonService } from '../services/pokemon.service';
 import { Pokemon, PokemonListItem } from '../models/pokemon.interface';
+import { PokemonFilterComponent } from '../components/pokemon-filter/pokemon-filter.component';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-tab1',
@@ -53,17 +59,24 @@ import { Pokemon, PokemonListItem } from '../models/pokemon.interface';
     IonIcon,
     IonInfiniteScroll,
     IonInfiniteScrollContent,
-    IonSpinner,
     IonChip,
     IonLabel,
+    PokemonFilterComponent,
   ],
 })
 export class HomePage implements OnInit {
-  pokemons: Pokemon[] = [];
+  displayedPokemons: Pokemon[] = [];
+  allPokemons: Pokemon[] = [];
+  filteredPokemonsFromAPI: Pokemon[] = [];
+  selectedTypes: string[] = [];
+
   currentOffset = 0;
   isLoading = false;
+  isFilterLoading = false;
   hasMoreData = true;
   private itemsPerPage = 20;
+
+  currentMode: 'normal' | 'filtered' = 'normal';
 
   constructor(
     private pokemonService: PokemonService,
@@ -71,7 +84,7 @@ export class HomePage implements OnInit {
     private loadingController: LoadingController,
     private toastController: ToastController
   ) {
-    addIcons({ heart, heartOutline });
+    addIcons({ heart, heartOutline, searchOutline, chevronDownOutline });
   }
 
   ngOnInit() {
@@ -79,11 +92,66 @@ export class HomePage implements OnInit {
   }
 
   /**
+   * Getter para Pokémons que devem ser exibidos
+   */
+  get pokemonsToDisplay(): Pokemon[] {
+    return this.currentMode === 'filtered'
+      ? this.filteredPokemonsFromAPI
+      : this.displayedPokemons;
+  }
+
+  /**
+   * Manipula mudanças nos tipos selecionados
+   */
+  async onTypesChanged(types: string[]) {
+    this.selectedTypes = types;
+
+    if (types.length === 0) {
+      this.currentMode = 'normal';
+      this.displayedPokemons = [...this.allPokemons];
+      this.hasMoreData = true;
+    } else {
+      this.currentMode = 'filtered';
+      this.hasMoreData = false;
+
+      await this.loadPokemonsByTypes(types);
+    }
+  }
+
+  /**
+   * Carrega Pokémons filtrados por tipos da API
+   */
+  private async loadPokemonsByTypes(types: string[]) {
+    this.filteredPokemonsFromAPI = [];
+
+    const loading = await this.loadingController.create({
+      message: 'Buscando Pokémons por tipo...',
+      spinner: 'crescent',
+    });
+    await loading.present();
+
+    try {
+      const result = await firstValueFrom(
+        this.pokemonService.getPokemonByMultipleTypes(types)
+      );
+
+      if (result) {
+        this.filteredPokemonsFromAPI = result;
+      }
+    } catch (error) {
+      console.error('Erro ao filtrar por tipos:', error);
+      this.showErrorToast('Erro ao buscar Pokémons por tipo');
+    } finally {
+      loading.dismiss();
+    }
+  }
+
+  /**
    * Carrega os primeiros Pokémons com loading
    */
   async loadInitialPokemons() {
     const loading = await this.loadingController.create({
-      message: 'Carregando Pokémons...',
+      message: 'Carregando Pokédex...',
       spinner: 'crescent',
     });
     await loading.present();
@@ -91,17 +159,23 @@ export class HomePage implements OnInit {
     try {
       await this.loadPokemons();
     } catch (error) {
-      this.showErrorToast('Erro ao carregar Pokémons');
+      this.showErrorToast('Erro ao carregar Pokédex');
     } finally {
       loading.dismiss();
     }
   }
 
   /**
-   * Carrega lista de Pokémons da API
+   * Carrega lista paginada de Pokémons da API (modo normal)
    */
   async loadPokemons() {
-    if (this.isLoading || !this.hasMoreData) return;
+    if (
+      this.isLoading ||
+      !this.hasMoreData ||
+      this.currentMode === 'filtered'
+    ) {
+      return;
+    }
 
     this.isLoading = true;
 
@@ -114,10 +188,10 @@ export class HomePage implements OnInit {
 
       const pokemonDetails = await this.loadPokemonDetails(response.results);
 
-      this.pokemons = [...this.pokemons, ...pokemonDetails];
+      this.allPokemons = [...this.allPokemons, ...pokemonDetails];
+      this.displayedPokemons = [...this.displayedPokemons, ...pokemonDetails];
 
       this.currentOffset += this.itemsPerPage;
-
       this.hasMoreData = response.next !== null;
     } catch (error) {
       console.error('Erro ao carregar Pokémons:', error);
@@ -146,12 +220,16 @@ export class HomePage implements OnInit {
    * Manipula o infinite scroll
    */
   async onInfiniteScroll(event: any) {
-    await this.loadPokemons();
+    if (this.currentMode === 'normal') {
+      await this.loadPokemons();
+    }
+
     event.target.complete();
 
-    // Desabilita infinite scroll se não há mais dados
-    if (!this.hasMoreData) {
+    if (!this.hasMoreData || this.currentMode === 'filtered') {
       event.target.disabled = true;
+    } else {
+      event.target.disabled = false;
     }
   }
 
@@ -236,8 +314,21 @@ export class HomePage implements OnInit {
   }
 
   /**
-   * Mostra toast de sucesso
+   * Limpa cache e recarrega
    */
+  async refreshData() {
+    this.pokemonService.clearCache();
+    this.allPokemons = [];
+    this.displayedPokemons = [];
+    this.filteredPokemonsFromAPI = [];
+    this.currentOffset = 0;
+    this.hasMoreData = true;
+    this.selectedTypes = [];
+    this.currentMode = 'normal';
+
+    await this.loadInitialPokemons();
+  }
+
   private async showToast(message: string) {
     const toast = await this.toastController.create({
       message,
@@ -248,9 +339,6 @@ export class HomePage implements OnInit {
     toast.present();
   }
 
-  /**
-   * Mostra toast de erro
-   */
   private async showErrorToast(message: string) {
     const toast = await this.toastController.create({
       message,
@@ -259,5 +347,16 @@ export class HomePage implements OnInit {
       color: 'danger',
     });
     toast.present();
+  }
+
+  /**
+   * TrackBy function para melhor performance no *ngFor
+   */
+  trackByPokemonId(index: number, pokemon: Pokemon): number {
+    return pokemon.id;
+  }
+
+  isFilteredMode(): boolean {
+    return this.currentMode === 'filtered';
   }
 }

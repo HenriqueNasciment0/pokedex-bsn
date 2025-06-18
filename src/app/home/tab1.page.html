@@ -1,6 +1,15 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="primary">
-    <ion-title> Pokédex </ion-title>
+    <ion-title>Pokédex</ion-title>
+
+    <app-pokemon-filter
+      buttonClass="filter-button"
+      slot="end"
+      [selectedTypes]="selectedTypes"
+      (typesChanged)="onTypesChanged($event)"
+      [disabled]="isLoading || isFilterLoading"
+      [compact]="true"
+    ></app-pokemon-filter>
   </ion-toolbar>
 </ion-header>
 
@@ -11,14 +20,14 @@
     </ion-toolbar>
   </ion-header>
 
-  <ion-grid class="pokemon-grid">
+  <ion-grid class="pokemon-grid" *ngIf="!isFilterLoading">
     <ion-row>
       <ion-col
         size="12"
         size-sm="6"
         size-md="4"
         size-lg="3"
-        *ngFor="let pokemon of pokemons"
+        *ngFor="let pokemon of pokemonsToDisplay; trackBy: trackByPokemonId"
       >
         <ion-card
           class="pokemon-card"
@@ -80,10 +89,23 @@
     </ion-row>
   </ion-grid>
 
+  <div
+    class="no-results"
+    *ngIf="selectedTypes.length > 0 && pokemonsToDisplay.length === 0 && !isFilterLoading"
+  >
+    <ion-icon name="search-outline" color="medium"></ion-icon>
+    <h3>Nenhum Pokémon encontrado</h3>
+    <p>Não foram encontrados Pokémons com os tipos selecionados.</p>
+    <ion-button fill="outline" (click)="onTypesChanged([])">
+      Limpar Filtros
+    </ion-button>
+  </div>
+
   <ion-infinite-scroll
     threshold="100px"
     (ionInfinite)="onInfiniteScroll($event)"
-    [disabled]="!hasMoreData"
+    [disabled]="!hasMoreData || isFilteredMode()"
+    *ngIf="currentMode === 'normal'"
   >
     <ion-infinite-scroll-content
       loading-spinner="crescent"
@@ -91,9 +113,4 @@
     >
     </ion-infinite-scroll-content>
   </ion-infinite-scroll>
-
-  <div *ngIf="isLoading && pokemons.length === 0" class="loading-container">
-    <ion-spinner name="crescent" color="primary"></ion-spinner>
-    <p>Carregando Pokémons...</p>
-  </div>
 </ion-content>
