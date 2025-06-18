@@ -1,25 +1,26 @@
-<ion-header [translucent]="true">
+<ion-header class="ion-no-border">
   <ion-toolbar color="primary">
     <ion-title>Pokédex</ion-title>
 
-    <app-pokemon-filter
-      buttonClass="filter-button"
-      slot="end"
-      [selectedTypes]="selectedTypes"
-      (typesChanged)="onTypesChanged($event)"
-      [disabled]="isLoading || isFilterLoading"
-      [compact]="true"
-    ></app-pokemon-filter>
+    <ion-buttons slot="end">
+      <app-pokemon-filter
+        [selectedTypes]="selectedTypes"
+        (typesChanged)="onTypesChanged($event)"
+        [disabled]="isLoading || isFilterLoading"
+        [compact]="true"
+      >
+        <ion-button class="pro-filter-button">
+          <ion-icon
+            slot="icon-only"
+            [name]="selectedTypes.length > 0 ? 'funnel' : 'funnel-outline'"
+          ></ion-icon>
+        </ion-button>
+      </app-pokemon-filter>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Pokédex</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
   <ion-grid class="pokemon-grid" *ngIf="!isFilterLoading">
     <ion-row>
       <ion-col
