@@ -7,7 +7,7 @@
 ## 🎥 Demo da Aplicação
 
 <div align="center">
-  <video src="https://github.com/user-attachments/assets/0b41001a-c62c-4e02-aeb7-288f33b75474" controls width="70%"></video>
+  <video src="https://github.com/user-attachments/assets/167f8680-ff9e-4b2f-bd38-4992b9f93ae0" controls width="70%"></video>
 </div>
 
 Uma Pokedex moderna e elegante desenvolvida com Ionic Angular usando componentes standalone.
